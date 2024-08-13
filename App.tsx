@@ -6,15 +6,20 @@
  */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import type { PropsWithChildren } from 'react';
 import {
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
+  FlatList,
   Text,
+  TouchableOpacity,
+  TouchableOpacityBase,
+  Button,
   useColorScheme,
   View,
+  Image,
 } from 'react-native';
 
 import {
@@ -25,11 +30,23 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useState, useEffect } from "react"
+
+
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
+
+
+
+
+const Stack = createNativeStackNavigator();
+
+
+function Section({ children, title }: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -42,6 +59,24 @@ function Section({children, title}: SectionProps): React.JSX.Element {
         ]}>
         {title}
       </Text>
+
+      <View
+      >
+        <Text style={{
+
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 10,
+          backgroundColor: 'lightblue',
+
+
+        }}>Try editing me! 🎉</Text>
+
+
+      </View>
+
+
       <Text
         style={[
           styles.sectionDescription,
@@ -55,6 +90,117 @@ function Section({children, title}: SectionProps): React.JSX.Element {
   );
 }
 
+
+
+function HomeView({ navigation }) {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Home Screen</Text>
+      <Button title='Press' onPress={() => navigation.navigate('AboutView')}></Button>
+    </View>
+  );
+}
+
+
+
+function AboutView({ navigation }) {
+  return (
+    <View style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <Text>About Screen</Text>
+      <Button title='Go Back' onPress={() => navigation.navigate('HomeView')}></Button>
+    </View>
+  )
+}
+
+
+
+
+const ListView = ({ navigation }) => {
+
+  const [vid, setVid] = useState([])
+  useEffect(() => {
+    fetch("http://192.168.50.176:3000/videos")
+      .then((response) => { return response.json(); })
+      .then((Loose) => {
+        setVid(Loose);
+      })
+
+      .catch(error => console.error(error))
+  }, []);
+
+  return (
+    <View>
+
+
+      <Text>Navigate to DetailView</Text>
+      <FlatList
+        data={vid}
+        renderItem={({ item }) =>
+
+          <TouchableOpacity onPress={() => navigation.navigate('DetailView', { id: item.id })}>
+
+
+            <View
+
+
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 10,
+              }}>
+              <Image source={{ uri: item.thumbnail }}
+                width={100}
+                height={100}
+              />
+              <View style={{ padding: 5 }}>
+                <Text>{item.title}</Text>
+                <Text>{item.url}</Text>
+
+
+              </View>
+
+            </View>
+
+          </TouchableOpacity>
+
+
+        }>
+
+
+      </FlatList>
+
+    </View>
+  );
+};
+
+
+const DetailView = ({ navigation, route }) => {
+  const videoID = route.params.id
+  useEffect(() => {
+    fetch("http://192.168.50.176:3000/videos")
+     .then((response) => { return response.json(); })
+     .then((Link)=>{
+      console.log(Link)
+
+     })
+      
+
+}, []);
+
+return (
+  <View>
+    <TouchableOpacity onPress={() => navigation.navigate('ListView')}>
+      <Text>{videoID}</Text>
+    </TouchableOpacity>
+  </View>
+)
+}
+
+
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -62,37 +208,19 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName='ListView'>
+        <Stack.Screen name='HomeView' component={HomeView} />
+        <Stack.Screen name='AboutView' component={AboutView} />
+
+        <Stack.Screen name="ListView" component={ListView} />
+        <Stack.Screen name="DetailView" component={DetailView} />
+
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
