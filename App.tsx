@@ -136,6 +136,9 @@ const ListView = ({ navigation }) => {
     <View>
 
 
+      <h1>Video List</h1>
+      <p>View all types of video here.</p>
+
       <Text>Navigate to DetailView</Text>
       <FlatList
         data={vid}
